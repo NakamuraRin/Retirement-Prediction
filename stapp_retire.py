@@ -235,6 +235,7 @@ def main():
             df = copy.deepcopy(st.session_state.df)
 
             # 要約統計量の表示
+            st_display_table(df.describe())
 
             
         else:
@@ -249,7 +250,11 @@ def main():
             # セッションステートに退避していたデータフレームを復元
             df = copy.deepcopy(st.session_state.df)
 
+            column_list = list(df.columns.values)
+            selected_column = st.sidebar.selectbox('グラフのX軸', column_list)
+
             # グラフの表示
+            st_display_graph(df, selected_column)
 
             
         else:
@@ -263,21 +268,37 @@ def main():
             # セッションステートに退避していたデータフレームを復元
             df = copy.deepcopy(st.session_state.df)
 
+            selected_num = st.sidebar.number_input(label = '決定木の深さ(サーバーの負荷軽減のため最高値は3)', min_value = 1, max_value = 3, value = 2)
+
             # 説明変数と目的変数の設定
             train_X = df.drop("退職", axis=1)   # 退職列以外を説明変数にセット
             train_Y = df["退職"]                # 退職列を目的変数にセット
 
             # 決定木による予測
-            clf, train_pred, train_scores = ml_dtree(train_X, train_Y, 2)
+            clf, train_pred, train_scores = ml_dtree(train_X, train_Y, selected_num)
 
             # 正解率を出力
-
+            st.caption('決定木の予測')
+            st.subheader(f"正解率：{train_scores}")
 
             # 決定木のツリーを出力
+            st.caption('')  # 改行
+            st.caption('決定木の可視化')
+            st_display_dtree(clf, train_X.columns)
             
 
         else:
             st.subheader('訓練用データをアップロードしてください')
+
+    if choice == 'About':
+        
+        image = Image.open('logo_nail.png')
+        st.image(image)
+
+        #components.html(""""""):
+        st.markdown("Built by [Nail Team]")
+        st.text("Version 0.6")
+        st.markdown("For More Information check out   (https://nai-lab.com/)")
         
 
 if __name__ == "__main__":
